@@ -4,6 +4,7 @@ namespace PMG\BingAds;
 
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Log\LoggerInterface;
 
 /**
  * Header interface for the bing services.
@@ -44,4 +45,11 @@ interface BingService
      * Set a message converter for the client
      */
     public function setMessageConverter(PsrMessageConverter $converter) : void;
+
+    /**
+     * Sets a logger for the client, used if the client is in trace mode to
+     * send messages to the logger with actual requests and responses for debugging
+     * purposes.
+     */
+    public function setLogger(LoggerInterface $logger) : void;
 }

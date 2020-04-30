@@ -2,6 +2,9 @@
 
 namespace PMG\BingAds;
 
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
+
 trait BingServiceDependencies
 {
     /**
@@ -18,6 +21,11 @@ trait BingServiceDependencies
      * @var PsrMessageConverter
      */
     private $messageConverter;
+
+    /**
+     * @var LoggerInterface
+     */
+    private $logger;
 
     /**
      * {@inheritdoc}
@@ -41,6 +49,14 @@ trait BingServiceDependencies
     public function setMessageConverter(PsrMessageConverter $converter) : void
     {
         $this->messageConverter = $converter;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setLogger(LoggerInterface $logger) : void
+    {
+        $this->logger = $logger;
     }
 
     protected function getRequestHeaders() : RequestHeaders
@@ -68,5 +84,14 @@ trait BingServiceDependencies
         }
 
         return $this->messageConverter;
+    }
+
+    protected function getLogger() : LoggerInterface
+    {
+        if (!$this->logger) {
+            $this->logger = new NullLogger();
+        }
+
+        return $this->logger;
     }
 }
