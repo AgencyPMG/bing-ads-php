@@ -4,7 +4,6 @@ namespace PMG\BingAds;
 
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
-use Psr\Log\LoggerInterface;
 
 /**
  * Header interface for the bing services.
@@ -51,5 +50,5 @@ interface BingService
      * send messages to the logger with actual requests and responses for debugging
      * purposes.
      */
-    public function setLogger(LoggerInterface $logger) : void;
+    public function setLogger(SoapLogger $logger) : void;
 }

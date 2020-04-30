@@ -54,7 +54,7 @@ trait BingServiceDependencies
     /**
      * {@inheritdoc}
      */
-    public function setLogger(LoggerInterface $logger) : void
+    public function setLogger(SoapLogger $logger) : void
     {
         $this->logger = $logger;
     }
@@ -86,10 +86,10 @@ trait BingServiceDependencies
         return $this->messageConverter;
     }
 
-    protected function getLogger() : LoggerInterface
+    protected function getLogger() : SoapLogger
     {
         if (!$this->logger) {
-            $this->logger = new NullLogger();
+            $this->logger = new NullSoapLogger();
         }
 
         return $this->logger;
