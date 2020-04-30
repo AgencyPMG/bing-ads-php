@@ -5,6 +5,7 @@ namespace PMG\BingAds;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use PMG\BingAds\Exception\ApiException;
+use function GuzzleHttp\Psr7\str as http_message_tostring;
 
 class BingSoapClient extends \SoapClient implements BingService
 {
@@ -35,6 +36,11 @@ class BingSoapClient extends \SoapClient implements BingService
      */
     private $serviceDescriptor;
 
+    /**
+     * @var bool
+     */
+    private $debug;
+
     public function __construct(BingSession $session, string $wsdl, array $options=[], ServiceDescriptor $sd=null)
     {
         $options['exceptions'] = true;
@@ -44,19 +50,35 @@ class BingSoapClient extends \SoapClient implements BingService
         $this->wsdlScheme = parse_url($wsdl, PHP_URL_SCHEME);
         $this->session = $session;
         $this->serviceDescriptor = $sd ?? new ServiceDescriptor(new \ReflectionClass($this));
+        $this->debug = ($options['trace'] ?? false) && ($options['debug'] ?? false);
     }
 
     public function __soapCall($func, $args, $options=null, $inputHeaders=null, &$outputHeaders=null)
     {
         try {
-            return parent::__soapCall($func, $args, $options, array_merge(
+            $response = parent::__soapCall($func, $args, $options, array_merge(
                 (array) $inputHeaders,
                 $this->createSoapHeaders()
             ), $outputHeaders);
+
+            if ($this->debug) {
+                $httpRequest = $this->lastRequest();
+                $httpResponse = $this->lastResponse();
+                $this->getLogger()->debug($httpRequest ? http_message_tostring($httpRequest) : 'bing ads missing request');
+                $this->getLogger()->debug($httpResonse ? http_message_tostring($httpResponse) : 'bing ads missing response');
+            }
+
+            return $response;
         } catch (\SoapFault $fault) {
             $exception = $this->getFaultParser()->toException($fault, $this->classmap);
-            $exception->setRequest($this->lastRequest());
-            $exception->setResponse($this->lastResponse());
+            $exception->setRequest($httpRequest = $this->lastRequest());
+            $exception->setResponse($httpResponse = $this->lastResponse());
+
+            if ($this->debug) {
+                $this->getLogger()->error($httpRequest ? http_message_tostring($httpRequest) : 'bing ads missing request');
+                $this->getLogger()->error($httpResponse ? http_message_tostring($httpResponse) : 'bing ads missing response');
+            }
+
             throw $exception;
         }
     }
